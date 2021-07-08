@@ -1,12 +1,21 @@
+<!DOCTYPE html>
 <html>
-	<body>
-	<h1> Hello World! </h1>
-		<head>
-			<br/>
-		abc
-			<br/>
-           <input type="button" id='script' name="scriptbutton" value=" Run Script " onclick="exec('python https://owr7.github.io/new2.py');">
+  <head>    
+  </head>
+  <body>
+    <input type="button" id='script' name="scriptbutton" value=" Run Script " onclick="goPython()">
 
-        </head>
-	</body>
+    <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+
+    <script>
+        function goPython(){
+            $.ajax({
+              url: "new2.py",
+             context: document.body
+            }).done(function() {
+             alert('finished python script');;
+            });
+        }
+    </script>
+  </body>
 </html>
