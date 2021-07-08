@@ -6,7 +6,7 @@
    </title>
   </head>
 
-   <form method="post">
+   <form method="get">
 
     <input type="submit" value="GO" name="GO">
    </form>
@@ -14,7 +14,7 @@
 </html>
 
 <?php
-	if(isset($_POST['GO']))
+	if(isset($_GET['GO']))
 	{
 		
 		echo"success";
