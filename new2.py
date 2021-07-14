@@ -1,13 +1,11 @@
-import numpy as np
+import PySimpleGUIWeb as sg
 
-def write_fibo(x: int, a=0, b=1):
-	if x == 0:
-		return
-	print(a + b)
-	tmp = a
-	a = b
-	b = tmp + b
-	write_fibo(x-1, a=a, b=b)
+layout = [[sg.Text("Hello World")]]
+window = sg.window("try", layout)
 
-print("Hello world")
-write_fibo(5)
+while True:
+    event, values = window.read()
+if event == "EXIT" or event == sg.WIN_CLOSED::
+	break
+
+window.close()
