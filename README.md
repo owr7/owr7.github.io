@@ -11,5 +11,7 @@ pip install #name_of_package
 *How to run?*
 Type at the command line:
 python3 user_interface.py
+
 It possible that youhave to add the path to the files like:
-C:\Users\mc\AppData\Local\Programs\Python\Python39\**python** C:\Users\mc\Desktop\**user_interface.py** 
+
+C:\Users\mc\AppData\Local\Programs\Python\Python39\**python** C:\Users\mc\Desktop\**user_interface.py**
