@@ -1,4 +1,4 @@
-# owr7.github.io
+# Corona simulation
 Requirements:
 1. python 3+
 2. The next packages: numpy, mesa, PySimpleGUI
