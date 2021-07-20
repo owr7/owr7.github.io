@@ -1,4 +1,7 @@
+import io
 import time
+
+from matplotlib.backends.backend_agg import FigureCanvasAgg
 
 from Clean_Corona import *
 from mesa.visualization.modules import CanvasGrid, ChartModule
@@ -8,7 +11,7 @@ from matplotlib.ticker import NullFormatter  # useful for `logit` scale
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import PySimpleGUI as sg
+import PySimpleGUIWeb as sg
 import matplotlib
 
 matplotlib.use('TkAgg')
@@ -141,42 +144,52 @@ def run_avg_sim(model: CoronaModel, num_of_simulations: int, during_of_simulatio
         R_per_day[i] += model.get_current_R() / num_of_simulations
         policy_per_day[i] += model.get_current_policy() / num_of_simulations
         avg_time_for_step = avg_time_for_step * i / (i + 1) + (time.time() - start) * 1 / (i + 1)
-        start = time.time()
         finish_at = time.localtime(start_hour + num_of_simulations * during_of_simulation * avg_time_for_step)
+        sg.Window("Corona Simulation", [[sg.Text('Finish Time:' + str(finish_at.tm_hour)
+                                                 + ':' + str(finish_at.tm_min) + ':' +
+                                                 str(finish_at.tm_sec))]]).show()
     # return ills_per_day, teish_per_day, recovery_per_day, abroud_ills_per_day, R_per_day, policy_per_day
 
 
 def draw_figure(canvas, figure):
-    print(canvas)
-    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
-    return figure_canvas_agg
+    plt.close('all')  # erases previously drawn plots
+    canv = FigureCanvasAgg(figure)
+    buf = io.BytesIO()
+    canv.print_figure(buf, format='png')
+    if buf is None:
+        return None
+    buf.seek(0)
+    canvas.update(data=buf.read())
+    return canv
+    # figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    # figure_canvas_agg.draw()
+    # figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    # return figure_canvas_agg
 
 
 def show_avg_graphs(figs):
     layout = [[sg.Text('Results of average simulation', text_color='black')],
               [sg.Column([[sg.Text(figs[0][0])],
-              [sg.Canvas(key='CANVAS_1')],
-              [sg.Text(figs[1][0])],
-              [sg.Canvas(key='CANVAS_2')],
-              [sg.Text(figs[2][0])],
-              [sg.Canvas(key='CANVAS_3')], ])],
+                          [sg.Image(key='CANVAS_1')],
+                          [sg.Text(figs[1][0])],
+                          [sg.Image(key='CANVAS_2')],
+                          [sg.Text(figs[2][0])],
+                          [sg.Image(key='CANVAS_3')], ])],
               [sg.Column([[sg.Text(figs[3][0])],
-              [sg.Canvas(key='CANVAS_4')],
-              [sg.Text(figs[4][0])],
-              [sg.Canvas(key='CANVAS_5')],
-              [sg.Text(figs[5][0])],
-              [sg.Canvas(key='CANVAS_6')], ])],
+                          [sg.Image(key='CANVAS_4')],
+                          [sg.Text(figs[4][0])],
+                          [sg.Image(key='CANVAS_5')],
+                          [sg.Text(figs[5][0])],
+                          [sg.Image(key='CANVAS_6')], ])],
               [sg.Button('OK')]]
 
     # create the form and show it without the plot
     window = sg.Window('Results of average simulation', layout, finalize=True,
-                       element_justification='center', font='Helvetica 18',)
+                       element_justification='center', font='Helvetica 18', )
 
     # add the plot to the window
     for i, fig in enumerate(figs):
-        fig_canvas_agg = draw_figure(window['CANVAS_'+str(i + 1)].TKCanvas, fig[1])
+        fig_canvas_agg = draw_figure(window['CANVAS_' + str(i + 1)], fig[1])
     event, values = window.read()
 
     window.close()
@@ -184,19 +197,20 @@ def show_avg_graphs(figs):
 
 def run_sim(num_of_agents: int, width: int, height: int, infRate=None, mask_coeff=None, government_policy_coeff=None,
             R_mean=7, enforcement_level=0.01, disease_importing=0.5, show_online_data=None, avg_sim=False,
-            num_sim=1, during_sim=30):
+            num_sim=1, during_sim=30, immunity=0.99):
     if avg_sim:
         data_avg = [np.zeros(during_sim) for i in range(6)]
         for i in range(num_sim):
             model = CoronaModel(N=num_of_agents, width=width, height=height, infRate=infRate, mask_coeff=mask_coeff,
                                 government_policy_coeff=government_policy_coeff, R_mean=R_mean,
-                                enforcement_level=enforcement_level, disease_importing=disease_importing)
+                                enforcement_level=enforcement_level, disease_importing=disease_importing,
+                                immunity=immunity)
             run_avg_sim(model, num_sim, during_sim, data_avg)
         figs = []
         for j, k in enumerate(data_avg):
             fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
             fig.add_subplot(111).plot(list(range(during_sim)), k)
-            figs.append((results_names[j+1], fig))
+            figs.append((results_names[j + 1], fig))
         show_avg_graphs(figs)
         return
 
@@ -236,7 +250,7 @@ def run_sim(num_of_agents: int, width: int, height: int, infRate=None, mask_coef
                             'government_policy_coeff': government_policy_coeff,
                             'R_mean': R_mean,
                             'enforcement_level': enforcement_level,
-                            'disease_importing': disease_importing})
+                            'disease_importing': disease_importing, 'immunity': immunity})
 
     server.port = 8521  # The default
     server.launch()

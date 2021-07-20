@@ -60,6 +60,7 @@ class PeopleAgent(Agent):
         self.mask = False
         self.active = True
         self.import_ = False
+        self.recovery_immunity = 1
 
     def move(self, policeman, crowded):
         threshold = logistic_prob(self.model.move_coeff, [self.age / 100, -self.health / HealthStatus.TEISH,
@@ -82,9 +83,10 @@ class PeopleAgent(Agent):
             for p in cellmates:
                 # if p.health == HealthStatus.HEALTHY and type(p) == PeopleAgent:
                 if np.random.random() < mask_protection(self.mask, p.mask,
-                                                        protection_level=self.model.influence_rate):
+                                                        protection_level=self.model.influence_rate) * \
+                        (1 + p.health * self.recovery_immunity):
                     p.health = HealthStatus.ILL
-                    p.time_infection = self.model.time
+                    # p.time_infection = self.model.time
 
     def update_influence(self, cellmates):
         wearing_mask = [c for c in cellmates if c.mask]
@@ -116,6 +118,7 @@ class PeopleAgent(Agent):
         change = np.random.random()
         if change < chance_to_recovery:
             self.health = HealthStatus.RECOVERING
+            self.recovery_immunity = 1
         elif change < chance_to_recovery + chance_to_other:
             self.health = HealthStatus.TEISH
 
@@ -148,6 +151,8 @@ class PeopleAgent(Agent):
             active = self.active
         if not active or self.health == HealthStatus.TEISH:
             return
+        if self.health == HealthStatus.RECOVERING:
+            self.recovery_immunity *= self.model.immunity
         # Before move
         cellmates, close_policeman = self.get_environment_data(radius=3)
         self.move(close_policeman, len(cellmates) - close_policeman)
@@ -156,14 +161,13 @@ class PeopleAgent(Agent):
         crowd = len(cellmates) - close_policeman
         optional_to_be_infection = [c for c in cellmates
                                     if spatial.distance.euclidean(c.pos, self.pos) <= 2 and
-                                    type(c) == PeopleAgent and c.health == HealthStatus.HEALTHY]
+                                    type(c) == PeopleAgent and c.health <= HealthStatus.HEALTHY]
 
         self.wear_mask(crowded=crowd, policeman=close_policeman)
         self.contagious(optional_to_be_infection)
         self.self_change_health()
 
 
-# self.model.police_deterrence
 class CoronaModel(Model):
     def __init__(self, N=100, width=30, height=30, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
@@ -179,6 +183,7 @@ class CoronaModel(Model):
         self.goverment_policy_coeff = kwargs['government_policy_coeff']
         self.agent_turnover_rate = 0.005
         self.disease_importing = kwargs['disease_importing']
+        self.immunity = kwargs['immunity']
 
         self.save_seven_days_before = Queue(kwargs['R_mean'])
         self.policy = Policy.OPEN
@@ -272,3 +277,4 @@ class CoronaModel(Model):
         self.datacollector_4.collect(self)
         self.datacollector_5.collect(self)
         self.datacollector_6.collect(self)
+
