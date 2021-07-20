@@ -25,68 +25,6 @@ results_names = {
     6: "Policy (0: Open, 1: Mask & Distance, 2: Partial closure 3: Closure)",
 }
 
-#
-# def ChangeHex(n):
-#     if n < 0:
-#         return '0'
-#     elif n == 1:
-#         return '1'
-#     elif n == 0:
-#         return '0'
-#     elif 0 < n < 1:
-#         return '0'
-#     else:
-#         x = (n % 16)
-#         print('n', n)
-#         print('x', x)
-#         if x < 10:
-#             return str(x) + ChangeHex(n / 16),
-#         if x == 10:
-#             return 'A' + ChangeHex(n / 16),
-#         if x == 11:
-#             return 'B' + ChangeHex(n / 16),
-#         if x == 12:
-#             return 'C' + ChangeHex(n / 16),
-#         if x == 13:
-#             return 'D' + ChangeHex(n / 16),
-#         if x == 14:
-#             return 'E' + ChangeHex(n / 16),
-#         if x == 15:
-#             return 'F' + ChangeHex(n / 16),
-
-"""
-def agent_portrayal_2(agent):
-    portrayal = {"Shape": "circle",
-                 "Filled": "true"}
-    if type(agent) == Food:
-        portrayal['Color'] = '#FFAAFF'
-        portrayal['Layer'] = 1
-        portrayal['r'] = 0.5
-        return portrayal
-    elif type(agent) == CellAgent:
-        m = str(99 - int(float(agent.carrier) * 100) % 100)
-        # print(int(float(agent.carrier) * 100))
-        # print('m', m)
-        color = '#' + m + m + m
-        # print(color)
-        if agent.carrier < 0:
-            m = str(99 - int(float(-agent.carrier) * 100) % 100)
-            portrayal['Color'] = '#FF0000'  # +m+m
-        else:
-            portrayal['Color'] = color
-        # portrayal['Color'] = '#FFFF00'
-        portrayal['Layer'] = 0
-        portrayal['r'] = 0.5
-    elif type(agent) == WallAgent:
-        portrayal['Shape'] = 'rect'
-        portrayal['Color'] = '#233245'
-        portrayal['Layer'] = 0
-        portrayal['w'] = 1
-        portrayal['h'] = 1
-
-    return portrayal
-"""
-
 
 def agent_portrayal(agent):
     portrayal = {"Shape": "circle",
@@ -101,15 +39,6 @@ def agent_portrayal(agent):
     elif agent.health == HealthStatus.HEALTHY:
         portrayal['Color'] = '#00FF00'
         portrayal['Layer'] = 0
-    # elif agent.health == HealthStatus.ASYMPTOMATIC:
-    #     portrayal['Color'] = '#FFFF00'
-    #     portrayal['Layer'] = 1
-    # elif agent.health == HealthStatus.SLIGHTLY_ILL:
-    #     portrayal['Color'] = '#FF3000'
-    #     portrayal['Layer'] = 2
-    # elif agent.health == HealthStatus.SERIOUSLY_ILL:
-    #     portrayal['Color'] = '#FF0000'
-    #     portrayal['Layer'] = 3
     elif agent.health == HealthStatus.ILL:
         portrayal['Color'] = '#FF0000'
         portrayal['Layer'] = 2
@@ -148,7 +77,6 @@ def run_avg_sim(model: CoronaModel, num_of_simulations: int, during_of_simulatio
         sg.Window("Corona Simulation", [[sg.Text('Finish Time:' + str(finish_at.tm_hour)
                                                  + ':' + str(finish_at.tm_min) + ':' +
                                                  str(finish_at.tm_sec))]]).show()
-    # return ills_per_day, teish_per_day, recovery_per_day, abroud_ills_per_day, R_per_day, policy_per_day
 
 
 def draw_figure(canvas, figure):
@@ -161,10 +89,6 @@ def draw_figure(canvas, figure):
     buf.seek(0)
     canvas.update(data=buf.read())
     return canv
-    # figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
-    # figure_canvas_agg.draw()
-    # figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
-    # return figure_canvas_agg
 
 
 def show_avg_graphs(figs):
@@ -254,24 +178,4 @@ def run_sim(num_of_agents: int, width: int, height: int, infRate=None, mask_coef
 
     server.port = 8521  # The default
     server.launch()
-
-
-# server = ModularServer(AmebaModel,
-#                        [grid, chart_ameba, chart_ameba_2, chart_ameba_3],
-#                        "Ameba Model",
-#                        {"N": model_2.num_agents, "width": model_2.grid.width, "height": model_2.grid.height})
-
-
-"""
-chart_ameba = ChartModule([{"Label": "Var",
-                            "Color": "Blue"}],
-                          data_collector_name='datacollector')
-
-chart_ameba_2 = ChartModule([{"Label": "Clean",
-                              "Color": "Black"}],
-                            data_collector_name='datacollector_2')
-
-chart_ameba_3 = ChartModule([{"Label": "Clean_2",
-                              "Color": "Orange"}],
-                            data_collector_name='datacollector_3')
-"""
+ 
