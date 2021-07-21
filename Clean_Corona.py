@@ -36,7 +36,6 @@ def count_recovering(model):
 class PoliceAgent(Agent):
     def __init__(self, unique_id: int, model: Model):
         super().__init__(unique_id, model)
-        # self.initial_position = 0
         self.health = HealthStatus.HEALTHY
 
     def move(self):
@@ -86,8 +85,7 @@ class PeopleAgent(Agent):
                                                         protection_level=self.model.influence_rate) * \
                         (1 + p.health * self.recovery_immunity):
                     p.health = HealthStatus.ILL
-                    # p.time_infection = self.model.time
-
+                    
     def update_influence(self, cellmates):
         wearing_mask = [c for c in cellmates if c.mask]
         if len(wearing_mask) < 0.5 * len(cellmates):
@@ -103,7 +101,6 @@ class PeopleAgent(Agent):
                                    min(policeman, 1), self.social_influence,
                                    crowded / 10,
                                    ])
-        # print('mask:', threshold)
         if np.random.random() < threshold:
             self.mask = True
         else:
@@ -123,7 +120,6 @@ class PeopleAgent(Agent):
             self.health = HealthStatus.TEISH
 
     def travel_agent(self):
-        # return True
         if self.active:
             if np.random.random() < self.model.agent_turnover_rate:
                 self.active = False
@@ -220,21 +216,7 @@ class CoronaModel(Model):
             model_reporters={"Economic_status": self.get_current_economic_status},
             agent_reporters={"Health": "health"}
         )
-
-        # EXPERT VERSION
-        # if len(kwargs) > 0:
-        #
-        #     self.disease_importing = kwargs['disease_importing']
-        #     self.number_of_hospital_beds = kwargs['disease_importing']
-        #     self.cop_area = width / kwargs['number_of_cops']
-
-        # SIMPLE VERSION
-        # else:
-        #     self.agent_turnover_rate = -1
-        #     self.disease_importing = -1
-        #     self.number_of_hospital_beds = -1
-        #     self.cop_max_dist = -1
-
+        
         for i in range(self.num_agents):
             a = PeopleAgent(i, self, HealthStatus.HEALTHY)
             self.schedule.add(a)
