@@ -7,6 +7,7 @@ Requirements:
 Copy the files to folder in your computer.
 If there isn't python on the computer you can download and install from here: https://www.python.org/downloads/.
 In order to install the missing packages type at the command line:
+
 pip install #name_of_package
 # How to run it?
 Type at the command line:
