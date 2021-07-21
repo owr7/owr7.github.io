@@ -5,6 +5,7 @@ default_dict = {
     "-numOfAgents-": 100,
     "-width-": 30,
     "-Height-": 30,
+    'rateTurnover': 0.005,
     "importDisease": 0.5,
     "noMaskInfection": 0.8,
     "oneMaskInfectionI": 0.25,
@@ -19,11 +20,17 @@ default_dict = {
     "numIllsW": 1,
     "RcoeffW": 0,
     "economicStatusW": 0,
+    # "recoverChanceCoeffA": 1,
+    # "recoverChanceCoeffB": 1,
     "EnforcementLevel": 0.05,
     "Rmean": 7,
     "numberOfSim": 10,
     "duringOfSim": 30,
     "immunity": 0.99,
+    'openPolicy': 1.05,
+    'maskDistPolicy': 1,
+    'partClosePolicy': 0.98,
+    'closePolicy': 0.97,
 }
 
 global_parameters = [[
@@ -37,6 +44,9 @@ global_parameters = [[
     [
         sg.Text("Height:"),
         sg.In(size=(10, 1), enable_events=True, key="-Height-", default_text=default_dict['-Height-'])],
+    [
+        sg.Text("Chance of agent to travel abroad (determines the rate of turnover):"),
+        sg.In(size=(10, 1), enable_events=True, key="rateTurnover", default_text=default_dict['rateTurnover'])],
     [
         sg.Text("Disease import percentages:"),
         sg.In(size=(10, 1), enable_events=True, key="importDisease", default_text=default_dict['importDisease'])],
@@ -124,6 +134,44 @@ government_policy = [
 
 ]
 
+economic_status = [
+    [sg.Text("Economic status increasing and decreasing", text_color='black')],
+    [
+        sg.Text("Change rate when open policy:"),
+        sg.In(size=(10, 1), enable_events=True, key="openPolicy", default_text=default_dict['openPolicy'])
+    ],
+    [
+        sg.Text("Change rate when mask and distance policy:"),
+        sg.In(size=(10, 1), enable_events=True, key="maskDistPolicy", default_text=default_dict['maskDistPolicy'])
+    ],
+    [
+        sg.Text("Change rate when partial closure policy:"),
+        sg.In(size=(10, 1), enable_events=True, key="partClosePolicy", default_text=default_dict['partClosePolicy'])
+    ],
+    [
+        sg.Text("Change rate when closure policy:"),
+        sg.In(size=(10, 1), enable_events=True, key="closePolicy", default_text=default_dict['closePolicy'])
+    ],
+
+]
+#
+# dealing_with_the_disease = [
+#     [sg.Text("Dealing with the disease", text_color='black', font='a')],
+#     [sg.Text("After examining data from Israel and the United States,\n"
+#              "we identified that there is an exponential dependence between the chances of recovery and age.\n"
+#              "Therefore we assume P(Recovering)=a*exp(b*Age)\n"
+#              "Please enter your coefficients\n"
+#              "(The complement to 1 is the chance to not survived the illness)")],
+#     [
+#         sg.Text("a:"),
+#         sg.In(size=(25, 1), enable_events=True, key="recoverChanceCoeffA")
+#     ],
+#     [
+#         sg.Text("b:"),
+#         sg.In(size=(25, 1), enable_events=True, key="recoverChanceCoeffB")
+#     ],
+# ]
+
 which_data_to_show = [
     [sg.Text('Choose the online data you want to watch')],
     [
@@ -131,8 +179,9 @@ which_data_to_show = [
     [sg.Checkbox("Number Of Teish", key='numOfTeishCB', default=True)],
     [sg.Checkbox("Number Of Recovery", key='numOfRecoveryCB', default=True)],
     [sg.Checkbox("R Coeff.", key='RmeanCB', default=True)],
-    [sg.Checkbox("Ills come from abroad", key='numOfIllsAbroudCB', default=True)],
-    [sg.Checkbox("Current Government policy", key='policyCB', default=True),
+    [sg.Checkbox("Ills Come From Abroad", key='numOfIllsAbroudCB', default=True)],
+    [sg.Checkbox("Current Government Policy", key='policyCB', default=True), ],
+    [sg.Checkbox("Current Economic Status", key='ecoStatCB', default=True),
      ],
 ]
 
@@ -147,10 +196,12 @@ run_avg_simulation = [[sg.Text('No visual version', text_color='balck')],
                       [sg.Text('During of each simulation:'),
                        sg.In(size=(10, 1), enable_events=True, key="duringOfSim", default_text=default_dict['duringOfSim'])],
                       [sg.Button(button_text='Take Average on Simulations', key='-SUBMIT_AVG-')]]
+# layout = [[sg.Column(global_parameters + probability_of_influence + probability_of_wearing_mask +
+#                      government_policy + which_data_to_show + send_button)]]
 
 layout = [[sg.Column(global_parameters + probability_of_influence + probability_of_wearing_mask),
-           sg.Column(government_policy + which_data_to_show + send_button + run_avg_simulation)]]
-
+           sg.Column(government_policy + economic_status + which_data_to_show + send_button + run_avg_simulation)]]
+# + dealing_with_the_disease
 window = sg.Window("Corona Simulation", layout)
 
 
@@ -178,14 +229,21 @@ while True:
 
         show_online_data = [float(values['numOfIllsCB']), float(values['numOfTeishCB']),
                             float(values['numOfRecoveryCB']), float(values['RmeanCB']),
-                            float(values['numOfIllsAbroudCB']), float(values['policyCB'])]
+                            float(values['numOfIllsAbroudCB']), float(values['policyCB']),
+                            float(values['ecoStatCB'])]
+
+        economic_status = [float(values['openPolicy']), float(values['maskDistPolicy']),
+                           float(values['partClosePolicy']), float(values['closePolicy'])]
+
+        # deal_with_it = [float(values['recoverChanceCoeffA']), float(values['recoverChanceCoeffB'])]
 
         run_sim(int(values['-numOfAgents-']), int(values['-width-']), int(values['-Height-']), infRate=infRate,
                 mask_coeff=mask_coeff, government_policy_coeff=government_policy_coeff, R_mean=int(values['Rmean']),
                 enforcement_level=float(values['EnforcementLevel']), disease_importing=float(values['importDisease']),
                 show_online_data=show_online_data, avg_sim=(event == '-SUBMIT_AVG-'),
                 num_sim=int(values['numberOfSim']),
-                during_sim=int(values['duringOfSim']), immunity=values['immunity'])
+                during_sim=int(values['duringOfSim']), immunity=float(values['immunity']),
+                economic_status=economic_status, rateTurnover=float(values['rateTurnover']))
         break
     if event == "Exit" or event == sg.WIN_CLOSED:
         break

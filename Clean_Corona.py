@@ -36,6 +36,7 @@ def count_recovering(model):
 class PoliceAgent(Agent):
     def __init__(self, unique_id: int, model: Model):
         super().__init__(unique_id, model)
+        # self.initial_position = 0
         self.health = HealthStatus.HEALTHY
 
     def move(self):
@@ -80,10 +81,12 @@ class PeopleAgent(Agent):
     def contagious(self, cellmates):
         if self.health == HealthStatus.ILL:
             for p in cellmates:
+                # if p.health == HealthStatus.HEALTHY and type(p) == PeopleAgent:
                 if np.random.random() < mask_protection(self.mask, p.mask,
                                                         protection_level=self.model.influence_rate) * \
                         (1 + p.health * self.recovery_immunity):
                     p.health = HealthStatus.ILL
+                    # p.time_infection = self.model.time
 
     def update_influence(self, cellmates):
         wearing_mask = [c for c in cellmates if c.mask]
@@ -100,6 +103,7 @@ class PeopleAgent(Agent):
                                    min(policeman, 1), self.social_influence,
                                    crowded / 10,
                                    ])
+        # print('mask:', threshold)
         if np.random.random() < threshold:
             self.mask = True
         else:
@@ -119,6 +123,7 @@ class PeopleAgent(Agent):
             self.health = HealthStatus.TEISH
 
     def travel_agent(self):
+        # return True
         if self.active:
             if np.random.random() < self.model.agent_turnover_rate:
                 self.active = False
@@ -176,9 +181,10 @@ class CoronaModel(Model):
         self.mask_coeff = kwargs['mask_coeff']
         self.move_coeff = kwargs['mask_coeff']
         self.goverment_policy_coeff = kwargs['government_policy_coeff']
-        self.agent_turnover_rate = 0.005
+        self.agent_turnover_rate = kwargs['agent_turnover_rate']
         self.disease_importing = kwargs['disease_importing']
         self.immunity = kwargs['immunity']
+        self.economic_change_const = kwargs['economic_status']
 
         self.save_seven_days_before = Queue(kwargs['R_mean'])
         self.policy = Policy.OPEN
@@ -210,6 +216,25 @@ class CoronaModel(Model):
             model_reporters={"Policy": self.get_current_policy},
             agent_reporters={"Health": "health"})
 
+        self.datacollector_7 = DataCollector(
+            model_reporters={"Economic_status": self.get_current_economic_status},
+            agent_reporters={"Health": "health"}
+        )
+
+        # EXPERT VERSION
+        # if len(kwargs) > 0:
+        #
+        #     self.disease_importing = kwargs['disease_importing']
+        #     self.number_of_hospital_beds = kwargs['disease_importing']
+        #     self.cop_area = width / kwargs['number_of_cops']
+
+        # SIMPLE VERSION
+        # else:
+        #     self.agent_turnover_rate = -1
+        #     self.disease_importing = -1
+        #     self.number_of_hospital_beds = -1
+        #     self.cop_max_dist = -1
+
         for i in range(self.num_agents):
             a = PeopleAgent(i, self, HealthStatus.HEALTHY)
             self.schedule.add(a)
@@ -229,6 +254,9 @@ class CoronaModel(Model):
     def get_current_R(self):
         return self.R
 
+    def get_current_economic_status(self):
+        return self.economic_status
+
     def cal_R(self):
         if len(self.save_seven_days_before.queue) > 0:
             if self.save_seven_days_before.queue[0] > 0:
@@ -236,7 +264,7 @@ class CoronaModel(Model):
 
     def update_policy(self):
         threshold = logistic_prob(self.goverment_policy_coeff, [count_ills(self) / self.num_agents,
-                                                                self.R, self.economic_status / 100])
+                                                                self.R, self.economic_status / 100 - 1])
         if threshold < 0.2:
             self.policy = Policy.OPEN
         elif threshold < 0.4:
@@ -246,16 +274,22 @@ class CoronaModel(Model):
         else:
             self.policy = Policy.CLOSURE
 
+    def update_economy(self):
+        self.economic_status *= self.economic_change_const[self.policy]
+
     def step(self) -> None:
         self.time += 1
         self.schedule.step()
         self.save_seven_days_before.insert(count_ills(self))
         self.cal_R()
         self.update_policy()
+        self.update_economy()
         self.datacollector_1.collect(self)
         self.datacollector_2.collect(self)
         self.datacollector_3.collect(self)
         self.datacollector_4.collect(self)
         self.datacollector_5.collect(self)
         self.datacollector_6.collect(self)
+        self.datacollector_7.collect(self)
+
 
