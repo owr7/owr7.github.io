@@ -20,8 +20,6 @@ default_dict = {
     "numIllsW": 1,
     "RcoeffW": 0,
     "economicStatusW": 0,
-    # "recoverChanceCoeffA": 1,
-    # "recoverChanceCoeffB": 1,
     "EnforcementLevel": 0.05,
     "Rmean": 7,
     "numberOfSim": 10,
@@ -154,23 +152,6 @@ economic_status = [
     ],
 
 ]
-#
-# dealing_with_the_disease = [
-#     [sg.Text("Dealing with the disease", text_color='black', font='a')],
-#     [sg.Text("After examining data from Israel and the United States,\n"
-#              "we identified that there is an exponential dependence between the chances of recovery and age.\n"
-#              "Therefore we assume P(Recovering)=a*exp(b*Age)\n"
-#              "Please enter your coefficients\n"
-#              "(The complement to 1 is the chance to not survived the illness)")],
-#     [
-#         sg.Text("a:"),
-#         sg.In(size=(25, 1), enable_events=True, key="recoverChanceCoeffA")
-#     ],
-#     [
-#         sg.Text("b:"),
-#         sg.In(size=(25, 1), enable_events=True, key="recoverChanceCoeffB")
-#     ],
-# ]
 
 which_data_to_show = [
     [sg.Text('Choose the online data you want to watch')],
@@ -196,12 +177,10 @@ run_avg_simulation = [[sg.Text('No visual version', text_color='balck')],
                       [sg.Text('During of each simulation:'),
                        sg.In(size=(10, 1), enable_events=True, key="duringOfSim", default_text=default_dict['duringOfSim'])],
                       [sg.Button(button_text='Take Average on Simulations', key='-SUBMIT_AVG-')]]
-# layout = [[sg.Column(global_parameters + probability_of_influence + probability_of_wearing_mask +
-#                      government_policy + which_data_to_show + send_button)]]
 
 layout = [[sg.Column(global_parameters + probability_of_influence + probability_of_wearing_mask),
            sg.Column(government_policy + economic_status + which_data_to_show + send_button + run_avg_simulation)]]
-# + dealing_with_the_disease
+
 window = sg.Window("Corona Simulation", layout)
 
 
@@ -234,8 +213,6 @@ while True:
 
         economic_status = [float(values['openPolicy']), float(values['maskDistPolicy']),
                            float(values['partClosePolicy']), float(values['closePolicy'])]
-
-        # deal_with_it = [float(values['recoverChanceCoeffA']), float(values['recoverChanceCoeffB'])]
 
         run_sim(int(values['-numOfAgents-']), int(values['-width-']), int(values['-Height-']), infRate=infRate,
                 mask_coeff=mask_coeff, government_policy_coeff=government_policy_coeff, R_mean=int(values['Rmean']),
