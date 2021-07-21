@@ -12,7 +12,8 @@ pip install #name_of_package
 
 # How to run it?
 Type at the command line:
-python3 user_interface.py
+
+python user_interface.py
 
 It possible that you have to add the path to the files like:
 
