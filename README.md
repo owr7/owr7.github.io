@@ -1,14 +1,15 @@
 # Corona simulation
 Requirements:
 1. python 3+
-2. The next packages: numpy, mesa, PySimpleGUIWeb
+2. The next packages: numpy, mesa, PySimpleGUIWeb, spatial, matplotlib
 
 # How to install?
 Copy the files to folder in your computer.
 If there isn't python on the computer you can download and install from here: https://www.python.org/downloads/.
 In order to install the missing packages type at the command line:
 
-pip install #name_of_package
+**pip install #name_of_package
+
 # How to run it?
 Type at the command line:
 python3 user_interface.py
