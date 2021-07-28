@@ -67,7 +67,7 @@ def logistic_prob(factors=None, variables=None):
     if factors is None or variables is None:
         return 0
     norm = sum([f for f in factors])
-    exponent = sum([f / norm * v for f, v in zip(factors, variables)]) / 0.1 - 1
+    exponent = (sum([f / norm * v for f, v in zip(factors, variables)]) - 1) / 0.1
     return 1 / (1 + np.exp(-exponent))
 
 
